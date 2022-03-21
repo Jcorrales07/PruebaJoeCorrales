@@ -3,6 +3,7 @@ package prueba;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Calendar;
 
 public class ITunes {
     File carpeta;
@@ -28,7 +29,6 @@ public class ITunes {
         }
     }
     
-    //Dudoso
     private int getCodigo(long offset) throws IOException {
         codigos.seek(0);
         int codigoSong = codigos.readInt();
@@ -50,6 +50,7 @@ public class ITunes {
             else if(offset == 4) return codigoDownLoad;
 
         }
+        
         return -1;
     }
     
@@ -65,7 +66,7 @@ public class ITunes {
         songs.writeDouble(0); // Reviews
     }
     
-    public void reviewSong(int code, int stars) throws IOException {
+    public void reviewSong(int code, int stars) throws IOException, IllegalAccessException {
         //Se busca el codigo
         songs.seek(0);
         while(songs.getFilePointer() < songs.length()) {
@@ -87,15 +88,18 @@ public class ITunes {
                     songs.writeDouble(review);
                 } else {
                     //Aca debe tirar el exception
-                    System.out.println("No se pudo añadir, su rating: " + stars);
+                    throw new IllegalAccessException();
                 }
-            } else {
-                System.out.println("No se encontro el codigo");
-            }
+            } else System.out.println("No se encontro el codigo deseado: "+ code);
         } 
     }
       
     public void downloadSong(int codigoSong, String cliente) throws IOException {
+        codigos.seek(0); //reseteamos el puntero
+        int codigoCancion = songs.readInt();
+        int codigoDescarga = songs.readInt();
+        int sumaCDescarga = ++codigoDescarga;
+
         //Validar que el codigoSong exista
         songs.seek(0);
         while(songs.getFilePointer() < songs.length()) {
@@ -108,18 +112,23 @@ public class ITunes {
             
             if(codigoSong == codigo) {
                 downloads.seek(downloads.length()); //Ultimo registro de descarga
-                if() {
-                    
-                }
-            }
+                if(downloads.length() != 0)
+                    downloads.writeInt(sumaCDescarga);
+                else
+                    downloads.writeInt(codigoDescarga);
+                
+                long fecha = Calendar.getInstance().getTimeInMillis();
+                downloads.writeLong(fecha);
+                downloads.writeInt(codigo);
+                downloads.writeDouble(precio);
+                return; //Truco para detener una funcion void, el compilador lo agrega hasta el final
+            } else 
+                System.out.println("Codigo no existente: "+ codigoSong);
         }
-        
-        
-        
-        
-        //se obtiene el proximo codiggo disponible para una descarga
-        //
     }
+    
+    
+    
     
     
     private boolean buscarCodigo(int codigo) throws IOException {
